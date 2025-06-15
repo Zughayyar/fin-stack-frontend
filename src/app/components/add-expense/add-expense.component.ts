@@ -17,6 +17,20 @@ export class AddExpenseComponent {
   isOpen = false;
   isLoading = false;
   errorMessage = '';
+  
+  expenseCategories = [
+    'Grocery',
+    'Debt',
+    'Transportation',
+    'Utilities',
+    'Entertainment',
+    'Healthcare',
+    'Other (specify)'
+  ];
+  
+  selectedCategory = '';
+  customCategory = '';
+  
   expense: NewExpense = {
     user_id: '',
     item_name: '',
@@ -54,19 +68,33 @@ export class AddExpenseComponent {
       user_id: '',
       item_name: '',
       amount: '',
-      date: '',
+      date: new Date().toISOString().split('T')[0],
       description: ''
     };
+    this.selectedCategory = '';
+    this.customCategory = '';
     this.errorMessage = '';
     this.isLoading = false;
+  }
+
+  onCategoryChange() {
+    if (this.selectedCategory !== 'Other (specify)') {
+      this.customCategory = '';
+    }
   }
 
   onSubmit() {
     this.isLoading = true;
     this.errorMessage = '';
     
+    // Determine the final category
+    let finalCategory = this.selectedCategory;
+    if (this.selectedCategory === 'Other (specify)' && this.customCategory.trim()) {
+      finalCategory = this.customCategory.trim();
+    }
+    
     // Validate required fields
-    if (!this.expense.item_name || !this.expense.amount || !this.expense.date) {
+    if (!finalCategory || !this.expense.amount || !this.expense.date) {
       this.errorMessage = 'Please fill in all required fields';
       this.isLoading = false;
       return;
@@ -74,7 +102,7 @@ export class AddExpenseComponent {
 
     const formattedExpense: NewExpense = {
       user_id: this.expense.user_id,
-      item_name: this.expense.item_name.trim(),
+      item_name: finalCategory,
       amount: this.expense.amount.toString(),
       date: this.expense.date,
       description: this.expense.description?.trim() || undefined

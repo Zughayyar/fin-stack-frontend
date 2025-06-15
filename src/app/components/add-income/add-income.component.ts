@@ -17,6 +17,18 @@ export class AddIncomeComponent {
   isOpen = false;
   isLoading = false;
   errorMessage = '';
+  
+  incomeSources = [
+    'Salary',
+    'Savings',
+    'Freelance',
+    'Investment',
+    'Other (specify)'
+  ];
+  
+  selectedSource = '';
+  customSource = '';
+  
   income: NewIncome = {
     user_id: '',
     source: '',
@@ -54,19 +66,33 @@ export class AddIncomeComponent {
       user_id: '',
       source: '',
       amount: '',
-      date: '',
+      date: new Date().toISOString().split('T')[0],
       description: ''
     };
+    this.selectedSource = '';
+    this.customSource = '';
     this.errorMessage = '';
     this.isLoading = false;
+  }
+
+  onSourceChange() {
+    if (this.selectedSource !== 'Other (specify)') {
+      this.customSource = '';
+    }
   }
 
   onSubmit() {
     this.isLoading = true;
     this.errorMessage = '';
     
+    // Determine the final source
+    let finalSource = this.selectedSource;
+    if (this.selectedSource === 'Other (specify)' && this.customSource.trim()) {
+      finalSource = this.customSource.trim();
+    }
+    
     // Validate required fields
-    if (!this.income.source || !this.income.amount || !this.income.date) {
+    if (!finalSource || !this.income.amount || !this.income.date) {
       this.errorMessage = 'Please fill in all required fields';
       this.isLoading = false;
       return;
@@ -75,7 +101,7 @@ export class AddIncomeComponent {
     // Format the data according to backend requirements
     const formattedIncome: NewIncome = {
       user_id: this.income.user_id,
-      source: this.income.source.trim(),
+      source: finalSource,
       amount: this.income.amount.toString(),
       date: this.income.date,
       description: this.income.description?.trim() || undefined

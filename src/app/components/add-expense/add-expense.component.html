@@ -1,78 +1,230 @@
-<div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" *ngIf="isOpen">
-  <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-    <div class="mt-3">
-      <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Add New Expense</h3>
+<!-- Mobile Full Screen View -->
+<div class="fixed inset-0 bg-white z-50 md:hidden overflow-y-auto" *ngIf="isOpen">
+  <div class="min-h-full p-4">
+    <!-- Mobile Header -->
+    <div class="flex items-center justify-between mb-6 pt-2">
+      <button
+        type="button"
+        (click)="close()"
+        class="text-gray-600 hover:text-gray-800 transition-colors"
+      >
+        <i class="fas fa-arrow-left text-xl"></i>
+      </button>
+      <h1 class="text-xl font-semibold text-gray-900">Add New Expense</h1>
+      <div class="w-6"></div> <!-- Spacer -->
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+      <p class="text-sm text-red-700">{{ errorMessage }}</p>
+    </div>
+
+    <!-- Mobile Form -->
+    <form (ngSubmit)="onSubmit()" #expenseForm="ngForm" class="space-y-6">
+      <!-- Category Selection -->
+      <div>
+        <label class="block text-gray-700 text-sm font-medium mb-2" for="category">
+          Category
+        </label>
+        <select
+          id="category"
+          name="category"
+          [(ngModel)]="selectedCategory"
+          (change)="onCategoryChange()"
+          required
+          class="w-full py-3 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xl font-medium"
+        >
+          <option value="" class="text-xl font-medium">Select a category</option>
+          <option *ngFor="let category of expenseCategories" [value]="category" class="text-xl font-medium">
+            {{ category }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Custom Category Input -->
+      <div *ngIf="selectedCategory === 'Other (specify)'">
+        <label class="block text-gray-700 text-sm font-medium mb-2" for="customCategory">
+          Specify Category
+        </label>
+        <input
+          type="text"
+          id="customCategory"
+          name="customCategory"
+          [(ngModel)]="customCategory"
+          placeholder="Enter custom category"
+          required
+          class="w-full py-3 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+      </div>
+
+      <!-- Amount -->
+      <div>
+        <label class="block text-gray-700 text-sm font-medium mb-2" for="amount">
+          Amount
+        </label>
+        <input
+          type="number"
+          step="0.01"
+          id="amount"
+          name="amount"
+          [(ngModel)]="expense.amount"
+          placeholder="0.00"
+          required
+          class="w-full py-3 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+      </div>
+
+      <!-- Date -->
+      <div>
+        <label class="block text-gray-700 text-sm font-medium mb-2" for="date">
+          Date
+        </label>
+        <input
+          type="date"
+          id="date"
+          name="date"
+          [(ngModel)]="expense.date"
+          required
+          class="w-full py-3 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        >
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label class="block text-gray-700 text-sm font-medium mb-2" for="description">
+          Description <span class="text-gray-400 text-xs">(optional)</span>
+        </label>
+        <textarea
+          id="description"
+          name="description"
+          [(ngModel)]="expense.description"
+          placeholder="Add any notes or details..."
+          class="w-full py-3 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          rows="3"
+        ></textarea>
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        [disabled]="!expenseForm.form.valid || isLoading"
+        class="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+      >
+        <span *ngIf="isLoading" class="inline-block animate-spin mr-2">⟳</span>
+        {{ isLoading ? 'Adding...' : 'Add Expense' }}
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Desktop Modal View -->
+<div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden md:flex items-center justify-center z-50" *ngIf="isOpen">
+  <div class="relative mx-auto p-6 border w-full max-w-md shadow-xl rounded-lg bg-white">
+    <div class="mb-4">
+      <h3 class="text-xl font-semibold leading-6 text-gray-900 mb-4">Add New Expense</h3>
       
       <!-- Error Message -->
       <div *ngIf="errorMessage" class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
         <p class="text-sm text-red-700">{{ errorMessage }}</p>
       </div>
       
-      <form (ngSubmit)="onSubmit()" #expenseForm="ngForm">
-        <div class="mb-4">
-          <label class="block text-gray-700 text-sm font-bold mb-2" for="item_name">
-            Item Name
+      <form (ngSubmit)="onSubmit()" #expenseFormDesktop="ngForm" class="space-y-4">
+        <!-- Category Selection -->
+        <div>
+          <label class="block text-gray-700 text-sm font-medium mb-2" for="categoryDesktop">
+            Category
+          </label>
+          <select
+            id="categoryDesktop"
+            name="categoryDesktop"
+            [(ngModel)]="selectedCategory"
+            (change)="onCategoryChange()"
+            required
+            class="w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-xl font-medium"
+          >
+            <option value="" class="text-xl font-medium">Select a category</option>
+            <option *ngFor="let category of expenseCategories" [value]="category" class="text-xl font-medium">
+              {{ category }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Custom Category Input -->
+        <div *ngIf="selectedCategory === 'Other (specify)'">
+          <label class="block text-gray-700 text-sm font-medium mb-2" for="customCategoryDesktop">
+            Specify Category
           </label>
           <input
             type="text"
-            id="item_name"
-            name="item_name"
-            [(ngModel)]="expense.item_name"
+            id="customCategoryDesktop"
+            name="customCategoryDesktop"
+            [(ngModel)]="customCategory"
+            placeholder="Enter custom category"
             required
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            class="w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
         </div>
-        <div class="mb-4">
-          <label class="block text-gray-700 text-sm font-bold mb-2" for="amount">
+
+        <!-- Amount -->
+        <div>
+          <label class="block text-gray-700 text-sm font-medium mb-2" for="amountDesktop">
             Amount
           </label>
           <input
             type="number"
             step="0.01"
-            id="amount"
-            name="amount"
+            id="amountDesktop"
+            name="amountDesktop"
             [(ngModel)]="expense.amount"
+            placeholder="0.00"
             required
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            class="w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
         </div>
-        <div class="mb-4">
-          <label class="block text-gray-700 text-sm font-bold mb-2" for="date">
+
+        <!-- Date -->
+        <div>
+          <label class="block text-gray-700 text-sm font-medium mb-2" for="dateDesktop">
             Date
           </label>
           <input
             type="date"
-            id="date"
-            name="date"
+            id="dateDesktop"
+            name="dateDesktop"
             [(ngModel)]="expense.date"
             required
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            class="w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
         </div>
-        <div class="mb-4">
-          <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
-            Description
+
+        <!-- Description -->
+        <div>
+          <label class="block text-gray-700 text-sm font-medium mb-2" for="descriptionDesktop">
+            Description <span class="text-gray-400 text-xs">(optional)</span>
           </label>
           <textarea
-            id="description"
-            name="description"
+            id="descriptionDesktop"
+            name="descriptionDesktop"
             [(ngModel)]="expense.description"
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            placeholder="Add any notes or details..."
+            class="w-full py-2 px-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             rows="3"
           ></textarea>
         </div>
-        <div class="flex justify-end gap-2">
+
+        <!-- Action Buttons -->
+        <div class="flex justify-end gap-3 pt-4">
           <button
             type="button"
             (click)="close()"
-            class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
+            class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
           >
             Cancel
           </button>
           <button
             type="submit"
-            [disabled]="!expenseForm.form.valid || isLoading"
-            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors disabled:opacity-50"
+            [disabled]="!expenseFormDesktop.form.valid || isLoading"
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span *ngIf="isLoading" class="inline-block animate-spin mr-2">⟳</span>
             {{ isLoading ? 'Adding...' : 'Add Expense' }}
