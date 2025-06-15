@@ -1,0 +1,382 @@
+<div class="min-h-screen bg-gray-50">
+  <!-- Mobile-First Dashboard Container -->
+  <div class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto font-sans">
+    <!-- Mobile-Responsive Header Section -->
+    <header class="mb-6 sm:mb-8">
+      <!-- Top Row: Title and User Info -->
+      <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4">
+        <div class="flex-1">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">Fin-Stack</h1>
+          </div>
+          <p *ngIf="currentUser" class="text-sm sm:text-base text-gray-600">
+            Welcome, {{ currentUser.first_name }} {{ currentUser.last_name }}
+          </p>
+        </div>
+        
+        <!-- User Info & Logout - Mobile Friendly -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div *ngIf="currentUser" class="text-sm text-gray-600 order-2 sm:order-1">
+            {{ currentUser.email }}
+          </div>
+          <button 
+            (click)="logout()" 
+            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium order-1 sm:order-2"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+
+      <!-- Month Navigation - Mobile Optimized -->
+      <div class="flex items-center justify-center gap-4 bg-white rounded-lg p-4 shadow-sm">
+        <button (click)="changeMonth(-1)" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+          <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+        </button>
+        <span class="text-lg font-semibold text-gray-900 min-w-0 text-center">
+          {{ selectedMonth | date:'MMMM yyyy' }}
+        </span>
+        <button (click)="changeMonth(1)" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+          <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Summary Cards - Already Mobile Responsive -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+      <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+        <h3 class="text-xs sm:text-sm uppercase tracking-wider text-gray-500 mb-2">Total Income</h3>
+        <p class="text-2xl sm:text-3xl font-semibold text-green-600">${{ totalIncome | number:'1.2-2' }}</p>
+      </div>
+      <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+        <h3 class="text-xs sm:text-sm uppercase tracking-wider text-gray-500 mb-2">Total Expenses</h3>
+        <p class="text-2xl sm:text-3xl font-semibold text-red-600">${{ totalExpenses | number:'1.2-2' }}</p>
+      </div>
+      <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 sm:col-span-2 lg:col-span-1">
+        <h3 class="text-xs sm:text-sm uppercase tracking-wider text-gray-500 mb-2">Balance</h3>
+        <p class="text-2xl sm:text-3xl font-semibold" [ngClass]="{'text-green-600': balance >= 0, 'text-red-600': balance < 0}">
+          ${{ balance | number:'1.2-2' }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="space-y-6 sm:space-y-8">
+      <!-- Income Section -->
+      <section>
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
+          <h2 class="text-xl sm:text-2xl font-semibold text-gray-900">Income</h2>
+          <button 
+            (click)="addIncomeComponent.open()" 
+            class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Add Income
+          </button>
+        </div>
+        
+        <!-- Mobile: Card Layout, Desktop: Table Layout -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+          <!-- Desktop Table View -->
+          <div class="hidden lg:block">
+            <table class="w-full">
+              <thead>
+                <tr class="bg-gray-50 border-b border-gray-200">
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200">
+                <tr *ngFor="let income of filteredIncomes" class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ income.date | date:'MMM d, y' }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ income.source }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">${{ income.amount | number:'1.2-2' }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ income.description || '-' }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <button (click)="startEditIncome(income)" class="px-3 py-1 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors mr-2">Edit</button>
+                    <button (click)="deleteIncome(income)" class="px-3 py-1 bg-red-50 text-red-700 rounded hover:bg-red-100 transition-colors">Delete</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Mobile Card View -->
+          <div class="lg:hidden">
+            <div *ngFor="let income of filteredIncomes" class="border-b border-gray-200 last:border-b-0">
+              <div class="p-4 space-y-3">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h3 class="font-semibold text-gray-900">{{ income.source }}</h3>
+                    <p class="text-sm text-gray-500">{{ income.date | date:'MMM d, y' }}</p>
+                  </div>
+                  <span class="text-lg font-semibold text-green-600">${{ income.amount | number:'1.2-2' }}</span>
+                </div>
+                <div *ngIf="income.description" class="text-sm text-gray-600">
+                  {{ income.description }}
+                </div>
+                <div class="flex gap-2">
+                  <button 
+                    (click)="startEditIncome(income)" 
+                    class="flex-1 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+                  >
+                    Edit
+                  </button>
+                  <button 
+                    (click)="deleteIncome(income)" 
+                    class="flex-1 px-3 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="filteredIncomes.length === 0" class="p-8 text-center text-gray-500">
+              No income records found for this month.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Expenses Section -->
+      <section>
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
+          <h2 class="text-xl sm:text-2xl font-semibold text-gray-900">Expenses</h2>
+          <button 
+            (click)="addExpenseComponent.open()" 
+            class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Add Expense
+          </button>
+        </div>
+        
+        <!-- Mobile: Card Layout, Desktop: Table Layout -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+          <!-- Desktop Table View -->
+          <div class="hidden lg:block">
+            <table class="w-full">
+              <thead>
+                <tr class="bg-gray-50 border-b border-gray-200">
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200">
+                <tr *ngFor="let expense of filteredExpenses" class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ expense.date | date:'MMM d, y' }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ expense.item_name }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-red-600">${{ expense.amount | number:'1.2-2' }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ expense.description || '-' }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <button (click)="startEditExpense(expense)" class="px-3 py-1 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 transition-colors mr-2">Edit</button>
+                    <button (click)="deleteExpense(expense)" class="px-3 py-1 bg-red-50 text-red-700 rounded hover:bg-red-100 transition-colors">Delete</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Mobile Card View -->
+          <div class="lg:hidden">
+            <div *ngFor="let expense of filteredExpenses" class="border-b border-gray-200 last:border-b-0">
+              <div class="p-4 space-y-3">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h3 class="font-semibold text-gray-900">{{ expense.item_name }}</h3>
+                    <p class="text-sm text-gray-500">{{ expense.date | date:'MMM d, y' }}</p>
+                  </div>
+                  <span class="text-lg font-semibold text-red-600">${{ expense.amount | number:'1.2-2' }}</span>
+                </div>
+                <div *ngIf="expense.description" class="text-sm text-gray-600">
+                  {{ expense.description }}
+                </div>
+                <div class="flex gap-2">
+                  <button 
+                    (click)="startEditExpense(expense)" 
+                    class="flex-1 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+                  >
+                    Edit
+                  </button>
+                  <button 
+                    (click)="deleteExpense(expense)" 
+                    class="flex-1 px-3 py-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="filteredExpenses.length === 0" class="p-8 text-center text-gray-500">
+              No expense records found for this month.
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Edit Income Modal - Mobile Optimized -->
+    <div *ngIf="showEditIncomeModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-lg shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+          <h3 class="text-lg font-semibold mb-4">Edit Income</h3>
+          <form (ngSubmit)="saveEditIncome()" #editIncomeFormRef="ngForm" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Source</label>
+              <input 
+                type="text" 
+                [(ngModel)]="editIncomeForm.source" 
+                name="source" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
+                required
+              >
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+              <input 
+                type="number" 
+                step="0.01" 
+                [(ngModel)]="editIncomeForm.amount" 
+                name="amount" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
+                required
+              >
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+              <input 
+                type="date" 
+                [(ngModel)]="editIncomeForm.date" 
+                name="date" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
+                required
+              >
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <textarea 
+                [(ngModel)]="editIncomeForm.description" 
+                name="description" 
+                rows="3"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              ></textarea>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3 pt-4">
+              <button 
+                type="button" 
+                (click)="cancelEditIncome()" 
+                class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Save Changes
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Expense Modal - Mobile Optimized -->
+    <div *ngIf="showEditExpenseModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-lg shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+          <h3 class="text-lg font-semibold mb-4">Edit Expense</h3>
+          <form (ngSubmit)="saveEditExpense()" #editExpenseFormRef="ngForm" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Item Name</label>
+              <input 
+                type="text" 
+                [(ngModel)]="editExpenseForm.item_name" 
+                name="item_name" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
+                required
+              >
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+              <input 
+                type="number" 
+                step="0.01" 
+                [(ngModel)]="editExpenseForm.amount" 
+                name="amount" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
+                required
+              >
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+              <input 
+                type="date" 
+                [(ngModel)]="editExpenseForm.date" 
+                name="date" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" 
+                required
+              >
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <textarea 
+                [(ngModel)]="editExpenseForm.description" 
+                name="description" 
+                rows="3"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              ></textarea>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3 pt-4">
+              <button 
+                type="button" 
+                (click)="cancelEditExpense()" 
+                class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit" 
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Save Changes
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Components -->
+  <app-add-income
+    #addIncomeComponent
+    (incomeAdded)="onIncomeAdded()"
+    (closed)="onIncomeAdded()"
+  ></app-add-income>
+
+  <app-add-expense
+    #addExpenseComponent
+    (expenseAdded)="onExpenseAdded()"
+    (closed)="onExpenseAdded()"
+  ></app-add-expense>
+</div> 
